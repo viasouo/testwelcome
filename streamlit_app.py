@@ -250,11 +250,8 @@ st.download_button(
 #GitHub，連結按鈕
 st.link_button("前往GitHub", "https://github.com/viasouo/testwelcome",type="primary")
 
-
-#左邊選單
-st.markdown('')
-st.sidebar.link_button("前往ppt連結", "https://www.canva.com/design/DAGDZjMHv_8/PVkUtxYnHZOYqmFPptzadA/edit?utm_content=DAGDZjMHv_8&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton",type="primary")
-st.sidebar.link_button("前往GitHub", "https://github.com/viasouo/testwelcome",type="primary")
+#ppt，連結按鈕
+st.sidebar.link_button("前往canva-ppt連結", "https://www.canva.com/design/DAGDZjMHv_8/PVkUtxYnHZOYqmFPptzadA/edit?utm_content=DAGDZjMHv_8&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton",type="primary")
 
 '''
 st.code(code, line_numbers=True)    
@@ -262,8 +259,5 @@ st.code(code, line_numbers=True)
 #GitHub，連結按鈕
 st.link_button("前往GitHub", "https://github.com/viasouo/testwelcome",type="primary")
 
-
-#左邊選單
-st.markdown('')
+#ppt，連結按鈕
 st.sidebar.link_button("前往canva-ppt連結", "https://www.canva.com/design/DAGDZjMHv_8/PVkUtxYnHZOYqmFPptzadA/edit?utm_content=DAGDZjMHv_8&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton",type="primary")
-st.sidebar.link_button("前往GitHub", "https://github.com/viasouo/testwelcome",type="primary")
