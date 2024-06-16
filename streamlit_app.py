@@ -23,12 +23,11 @@ def load_data():
 df = load_data()
 
 # 在 Streamlit 上顯示應用
-st.title('全台灣縣市投票分析')
-
-
+st.title('資料分析-核電廠公投視覺化分析')
+st.write('軟體系3 411077020 吳玟儀')
 
 # 使用者選擇縣市
-st.header('選擇縣市進行分析')
+st.header('選擇縣市進行分析', divider='rainbow')
 selected_county = st.selectbox('選擇縣市', df['行政區別'].unique())
 
 # 根據使用者選擇的縣市，顯示投票資訊
@@ -42,7 +41,7 @@ if not county_data.empty:
     st.write('投票人數：', county_data.iloc[0]['投票人數'])
     
     # 選擇圖表類型：長條圖或圓餅圖
-    st.subheader('選擇圖表類型')
+    st.subheader('選擇圖表類型', divider='rainbow')
     chart_type = st.radio("(二選一)", ['長條圖', '圓餅圖'])
     
     agree_count = float(county_data.iloc[0]['同意票 C1 票數'].replace(',', ''))
@@ -80,7 +79,7 @@ else:
     st.warning('找不到該縣市的投票資料。')
 
 # 數據搜尋功能
-st.header('搜尋特定投票數據')
+st.header('搜尋特定投票數據', divider='rainbow')
 search_term = st.text_input('輸入搜尋關鍵字 (縣市名)')
 search_results = df[df['行政區別'].str.contains(search_term, case=False, na=False)]
 
@@ -89,3 +88,36 @@ if not search_results.empty:
     st.dataframe(search_results)
 else:
     st.write('找不到符合條件的資料。')
+
+st.header('下載本網址使用的資料集', divider='rainbow')
+
+#dataframe下載成csv
+data = load_data()
+my_large_df = pd.DataFrame(data)
+
+#下載按鈕download button
+@st.cache_data
+def convert_df(df):
+    #IMPORTANT: Cache the conversion to prevent computation on every rerun
+    return df.to_csv(index=False).encode('cp950')
+
+csv = convert_df(my_large_df)
+st.download_button(
+    label="下載csv資料 (編碼cp950)",
+    data=csv,
+    file_name='全國性公民投票概況(全國).csv',
+    mime='csv'
+)
+
+@st.cache_data
+def convert_df(df):
+    #IMPORTANT: Cache the conversion to prevent computation on every rerun
+    return df.to_csv(index=False).encode('utf-8')
+    
+csv = convert_df(my_large_df)
+st.download_button(
+    label="下載csv資料 (編碼utf-8)",
+    data=csv,
+    file_name='全國性公民投票概況(全國).csv',
+    mime='csv'
+)
