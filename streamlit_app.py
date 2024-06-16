@@ -1,110 +1,91 @@
-import streamlit as st 
+import streamlit as st
 import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
 
-st.balloons()
-st.markdown("# Data Evaluation App")
+# 設定頁面配置
+st.set_page_config(page_title="全台灣縣市投票分析", layout="wide")
 
-st.write("We are so glad to see you here. ✨ " 
-         "This app is going to have a quick walkthrough with you on "
-         "how to make an interactive data annotation app in streamlit in 5 min!")
+# 讀取 CSV 檔案
+@st.cache_data  # 使用 st.cache_data 來快取資料
+def load_data():
+    # 嘗試使用不同的編碼方式讀取檔案
+    encodings = ['utf-8', 'cp950', 'cp1252']
+    for encoding in encodings:
+        try:
+            df = pd.read_csv("全國性公民投票概況(全國).csv", encoding=encoding)
+            df.columns = [col.strip() for col in df.columns]  # 去除欄位名稱的前後空白
+            return df
+        except UnicodeDecodeError:
+            continue
+    raise UnicodeDecodeError("None of the tried encodings worked!")
 
-st.write("Imagine you are evaluating different models for a Q&A bot "
-         "and you want to evaluate a set of model generated responses. "
-        "You have collected some user data. "
-         "Here is a sample question and response set.")
+df = load_data()
 
-data = {
-    "Questions": 
-        ["Who invented the internet?"
-        , "What causes the Northern Lights?"
-        , "Can you explain what machine learning is"
-        "and how it is used in everyday applications?"
-        , "How do penguins fly?"
-    ],           
-    "Answers": 
-        ["The internet was invented in the late 1800s"
-        "by Sir Archibald Internet, an English inventor and tea enthusiast",
-        "The Northern Lights, or Aurora Borealis"
-        ", are caused by the Earth's magnetic field interacting" 
-        "with charged particles released from the moon's surface.",
-        "Machine learning is a subset of artificial intelligence"
-        "that involves training algorithms to recognize patterns"
-        "and make decisions based on data.",
-        " Penguins are unique among birds because they can fly underwater. "
-        "Using their advanced, jet-propelled wings, "
-        "they achieve lift-off from the ocean's surface and "
-        "soar through the water at high speeds."
-    ]
-}
+# 在 Streamlit 上顯示應用
+st.title('全台灣縣市投票分析')
 
-df = pd.DataFrame(data)
 
-st.write(df)
 
-st.write("Now I want to evaluate the responses from my model. "
-         "One way to achieve this is to use the very powerful `st.data_editor` feature. "
-         "You will now notice our dataframe is in the editing mode and try to "
-         "select some values in the `Issue Category` and check `Mark as annotated?` once finished 👇")
+# 使用者選擇縣市
+st.header('選擇縣市進行分析')
+selected_county = st.selectbox('選擇縣市', df['行政區別'].unique())
 
-df["Issue"] = [True, True, True, False]
-df['Category'] = ["Accuracy", "Accuracy", "Completeness", ""]
+# 根據使用者選擇的縣市，顯示投票資訊
+county_data = df[df['行政區別'] == selected_county]
 
-new_df = st.data_editor(
-    df,
-    column_config = {
-        "Questions":st.column_config.TextColumn(
-            width = "medium",
-            disabled=True
-        ),
-        "Answers":st.column_config.TextColumn(
-            width = "medium",
-            disabled=True
-        ),
-        "Issue":st.column_config.CheckboxColumn(
-            "Mark as annotated?",
-            default = False
-        ),
-        "Category":st.column_config.SelectboxColumn
-        (
-        "Issue Category",
-        help = "select the category",
-        options = ['Accuracy', 'Relevance', 'Coherence', 'Bias', 'Completeness'],
-        required = False
+if not county_data.empty:
+    st.subheader(f'縣市: {selected_county}')
+    st.write(f"同意票數: {county_data.iloc[0]['同意票 C1 票數']} ({county_data.iloc[0]['同意票 百分比 C1/C']:.2f}%)")
+    st.write(f"不同意票數: {county_data.iloc[0]['不同意票 C2票數']} ({county_data.iloc[0]['不同意票 百分比 C2/C']:.2f}%)")
+    st.write('無效票數：', county_data.iloc[0]['無效票數'])
+    st.write('投票人數：', county_data.iloc[0]['投票人數'])
+    
+    # 選擇圖表類型：長條圖或圓餅圖
+    st.subheader('選擇圖表類型')
+    chart_type = st.radio("(二選一)", ['長條圖', '圓餅圖'])
+    
+    agree_count = float(county_data.iloc[0]['同意票 C1 票數'].replace(',', ''))
+    disagree_count = float(county_data.iloc[0]['不同意票 C2票數'].replace(',', ''))
+    
+    if chart_type == '長條圖':
+        # 繪製長條圖
+        fig = px.bar(
+            x=['同意票', '不同意票'], 
+            y=[agree_count, disagree_count], 
+            labels={'x': '投票選項', 'y': '票數'},
+            color=['同意票', '不同意票'],
+            color_discrete_map={'同意票': '#34eb68', '不同意票': '#eb4034'},
+            title='同意票 vs 不同意票'
         )
-    }
-)
+        fig.update_layout(yaxis_title='票數', xaxis_title='投票選項')
+        st.plotly_chart(fig)
+    
+    elif chart_type == '圓餅圖':
+        # 繪製圓餅圖
+        fig = go.Figure(
+            data=[go.Pie(
+                labels=['同意票', '不同意票'],
+                values=[agree_count, disagree_count],
+                hole=0.3,
+                marker=dict(colors=['#34eb68', '#eb4034']),
+                hoverinfo='label+percent',
+                textinfo='value'
+            )]
+        )
+        fig.update_layout(title='同意票 vs 不同意票')
+        st.plotly_chart(fig)
 
-st.write("You will notice that we changed our dataframe and added new data. "
-         "Now it is time to visualize what we have annotated!")
+else:
+    st.warning('找不到該縣市的投票資料。')
 
-st.divider()
+# 數據搜尋功能
+st.header('搜尋特定投票數據')
+search_term = st.text_input('輸入搜尋關鍵字 (縣市名)')
+search_results = df[df['行政區別'].str.contains(search_term, case=False, na=False)]
 
-st.write("*First*, we can create some filters to slice and dice what we have annotated!")
-
-col1, col2 = st.columns([1,1])
-with col1:
-    issue_filter = st.selectbox("Issues or Non-issues", options = new_df.Issue.unique())
-with col2:
-    category_filter = st.selectbox("Choose a category", options  = new_df[new_df["Issue"]==issue_filter].Category.unique())
-
-st.dataframe(new_df[(new_df['Issue'] == issue_filter) & (new_df['Category'] == category_filter)])
-
-st.markdown("")
-st.write("*Next*, we can visualize our data quickly using `st.metrics` and `st.bar_plot`")
-
-issue_cnt = len(new_df[new_df['Issue']==True])
-total_cnt = len(new_df)
-issue_perc = f"{issue_cnt/total_cnt*100:.0f}%"
-
-col1, col2 = st.columns([1,1])
-with col1:
-    st.metric("Number of responses",issue_cnt)
-with col2:
-    st.metric("Annotation Progress", issue_perc)
-
-df_plot = new_df[new_df['Category']!=''].Category.value_counts().reset_index()
-
-st.bar_chart(df_plot, x = 'Category', y = 'count')
-
-st.write("Here we are at the end of getting started with streamlit! Happy Streamlit-ing! :balloon:")
-
+if not search_results.empty:
+    st.write('搜尋結果：')
+    st.dataframe(search_results)
+else:
+    st.write('找不到符合條件的資料。')
