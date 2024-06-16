@@ -251,3 +251,5 @@ st.download_button(
 '''
 st.code(code, line_numbers=True)    
 
+#GitHub，連結按鈕
+st.link_button("前往GitHub", "https://github.com/viasouo/testwelcome",type="primary")
