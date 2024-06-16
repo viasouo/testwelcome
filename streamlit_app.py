@@ -252,5 +252,6 @@ st.download_button(
 st.code(code, line_numbers=True)    
 
 #GitHub，連結按鈕
-st.button("前往GitHub", "https://github.com/viasouo/testwelcome",type="primary")
+if st.button('前往GitHub'):
+    webbrowser.open_new_tab('https://github.com/viasouo/testwelcome')
 
