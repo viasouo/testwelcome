@@ -3,6 +3,7 @@ pandas
 numpy
 matplotlib
 xlrd
-plotly
+plotly.express
+plotly.graph_objects
 chardet
 streamlit folium streamlit-folium
