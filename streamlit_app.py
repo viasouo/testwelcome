@@ -247,13 +247,9 @@ st.download_button(
     mime='csv'
 )   
 
-#GitHub，連結按鈕
-st.link_button("前往GitHub", "https://github.com/viasouo/testwelcome",type="primary")
-
 
 '''
 st.code(code, line_numbers=True)    
 
 #GitHub，連結按鈕
 st.link_button("前往GitHub", "https://github.com/viasouo/testwelcome",type="primary")
-
